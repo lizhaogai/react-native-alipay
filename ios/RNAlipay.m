@@ -1,12 +1,16 @@
 #import "RNAlipay.h"
 #import <AlipaySDK/AlipaySDK.h>
+#import <WebKit/WebKit.h>
 
 
-@interface RNAlipay ()
+@interface RNAlipay ()<WKNavigationDelegate>
+
 @property (nonatomic, copy) RCTPromiseResolveBlock payOrderResolve;
+@property (nonatomic,strong) WKWebView *webView;
 
 @end
 @implementation RNAlipay
+
 {
     NSString *alipayScheme;
 }
@@ -81,6 +85,29 @@ RCT_EXPORT_MODULE()
     return NO;
 }
 
+#pragma mark - WKNavigationDelegate
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+
+    NSString * urlStr = navigationAction.request.URL.absoluteString;
+
+        BOOL isIntercepted = [[AlipaySDK defaultService] payInterceptorWithUrl:urlStr fromScheme:alipayScheme callback:nil];
+
+        if (isIntercepted) {
+            decisionHandler(WKNavigationActionPolicyCancel);
+            return;
+        }
+        decisionHandler(WKNavigationActionPolicyAllow);
+
+}
+
+-(WKWebView *)webView{
+    if (!_webView) {
+        _webView = [[WKWebView alloc]initWithFrame:CGRectZero configuration:[[WKWebViewConfiguration alloc]init]];
+        _webView.navigationDelegate = self;
+    }
+    return _webView;
+}
+
 
 RCT_EXPORT_METHOD(setAlipayScheme:(NSString *)scheme) {
     alipayScheme = scheme;
@@ -91,6 +118,13 @@ RCT_EXPORT_METHOD(alipay:(NSString *)info resolver:(RCTPromiseResolveBlock)resol
     [AlipaySDK.defaultService payOrder:info fromScheme: alipayScheme callback:^(NSDictionary *resultDic) {
         resolve(resultDic);
     }];
+}
+
+RCT_EXPORT_METHOD(alipayWithH5:(NSString *)info resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+    self.payOrderResolve = resolve;
+    dispatch_async(dispatch_get_main_queue(), ^(void) {
+        [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:info]]];
+    });
 }
 
 RCT_EXPORT_METHOD(authInfo:(NSString *)info resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {

@@ -133,6 +133,14 @@ export interface AuthResult {
  * @returns result 支付宝回调结果 https://docs.open.alipay.com/204/105301
  */
 export function alipay(payInfo: string): Promise<OrderResult>;
+
+/**
+ * 支付-手机网站支付
+ * @param payInfo 支付详情，是后台拼接好的支付参数
+ * @returns result 支付宝回调结果 https://docs.open.alipay.com/204/105301
+ */
+export function alipayWithH5(payInfo: string): Promise<OrderResult>;
+
 /**
  * 快速登录授权
  * - ⚠️ 注意授权成功返回结果是一个字符串，[返回内容](https://github.com/uiwjs/react-native-alipay/blob/74140a294e850884ed1851b9d2c2d2c00ee75003/index.d.ts#L89-L113)

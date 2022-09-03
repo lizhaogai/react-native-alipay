@@ -28,6 +28,14 @@ export default class Alipay {
   static alipay(orderInfo) {
     return NativeModules.RNAlipay.alipay(orderInfo);
   }
+  /**
+   * 支付-手机网站支付
+   * @param orderInfo 支付详情
+   * @returns result 支付宝回调结果 https://docs.open.alipay.com/204/105301
+   */
+  static alipayWithH5(orderInfo) {
+    return NativeModules.RNAlipay.alipayWithH5(orderInfo);
+  }
 
   /**
    * 快速登录授权
